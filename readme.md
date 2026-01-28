@@ -11,6 +11,10 @@ iMuslim adalah aplikasi web modern untuk kumpulan doa harian, dibangun dengan ta
 - **Detail Informatif**: Setiap doa dilengkapi dengan keterangan riwayat/hadits (Dalil).
 - **Fitur Berbagi**: Salin doa lengkap (Arab, Latin, Arti) ke clipboard atau bagikan link langsung.
 - **Rekomendasi Cerdas**: Fitur "Doa Lainnya" yang menampilkan doa terkait dalam satu kategori.
+- **Jadwal Imsakiyah 1447 H**: Cek jadwal imsakiyah dan waktu sholat lengkap untuk seluruh wilayah Indonesia.
+- **Pencarian Lokasi**: Pilih lokasi berdasarkan Provinsi dan Kabupaten/Kota secara dinamis.
+- **Halaman Khusus Imsakiyah**: Tampilan khusus untuk waktu penting (Imsak, Subuh, Maghrib, Isya) dan tabel 30 hari.
+- **Setiap fitur di atas tetap mengusung desain Premium Glassmorphism.**
 
 ## 🛠 Teknologi
 
@@ -46,8 +50,8 @@ Pastikan Anda sudah menginstall Node.js (v16+).
 - `pages/`: Halaman aplikasi (Routing otomatis).
 - `components/`: Komponen UI reusable (DoaCard, FilterBar, dll).
 - `stores/`: State management (Pinia) untuk data doa.
-- `composables/`: Logic untuk fetch API (`useDoa`).
-- `assets/`: File CSS global dan assets lainnya.
+- `composables/`: Logic untuk fetch API (`useDoa` & `useImsakiyah`).
+- `pages/imsakiyah/`: Halaman fitur Imsakiyah (Main & Detail).
 
 ---
 Dibuat dengan ❤️ untuk umat Muslim.

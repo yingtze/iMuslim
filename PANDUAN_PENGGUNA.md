@@ -39,6 +39,21 @@ Di halaman detail doa, terdapat dua tombol aksi di bagian atas:
    - Jika Anda membuka di HP (Mobile), menu *share native* akan muncul (WhatsApp, Instagram, dll).
    - Jika di Laptop/PC, tombol ini berfungsi sama dengan tombol Salin.
 
+## 🌙 Jadwal Imsakiyah
+
+Anda dapat mengakses fitur ini melalui menu **Imsakiyah** di navigasi utama.
+
+1. **Memilih Lokasi**:
+   - Pilih **Provinsi** Anda terlebih dahulu.
+   - Setelah provinsi dipilih, pilih **Kabupaten/Kota**.
+   - Jadwal imsakiyah akan otomatis muncul di bawahnya dalam bentuk tabel.
+
+2. **Halaman Khusus (View Detail)**:
+   - Klik tombol **Lihat Halaman Khusus** pada panel hasil pencarian.
+   - Anda akan diarahkan ke halaman detail lokasi tersebut.
+   - Di sini, Anda bisa melihat **Waktu Penting Hari Ini** (Imsak, Subuh, Maghrib, Isya) yang disorot secara khusus.
+   - Di bawahnya terdapat tabel lengkap jadwal 30 hari bulan Ramadhan.
+
 ## 🔗 Navigasi
 
 - **Doa Terkait**: Di bagian paling bawah halaman detail, Anda bisa melihat rekomendasi 3 doa lain yang satu kategori, memudahkan Anda menghafal doa-doa sejenis.

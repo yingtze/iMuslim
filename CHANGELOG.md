@@ -2,6 +2,22 @@
 
 Semua perubahan penting pada proyek iMuslim akan didokumentasikan di file ini.
 
+## [1.1.0] - 2026-01-29
+
+### ✨ Fitur Baru
+- **Fitur Imsakiyah Lengkap**: Menambahkan modul Jadwal Imsakiyah Ramadhan 1447 H / 2026 M.
+- **Seleksi Provinsi & Kota**: Implementasi pemilihan wilayah menggunakan API dinamis untuk daftar provinsi dan kabupaten/kota seluruh Indonesia.
+- **Halaman Khusus Imsakiyah**: View detail untuk satu kota tertentu dengan ringkasan "Waktu Penting Hari Ini" dan tabel lengkap 30 hari.
+
+### 🎨 Tampilan (UI/UX)
+- **Unified Teal Theme**: Memastikan seluruh halaman menggunakan aksen warna Teal/Emerald yang konsisten.
+- **iOS Sticky Back Button**: Mengimplementasikan tombol kembali model melayang yang menetap (*sticky*) saat di-scroll untuk navigasi yang lebih cepat.
+- **Compact Layout**: Optimalisasi ukuran kartu "Waktu Penting" agar lebih proporsional.
+
+### 🐛 Perbaikan Bug
+- Memperbaiki isu pengambilan data provinsi pada interaksi klien (`onMounted`) dengan mengganti `useFetch` menjadi `$fetch`.
+- Menyesuaikan *sticky offset* tombol kembali agar tidak tertutup atau menempel terlalu dekat dengan header utama.
+
 ## [1.0.0] - 2026-01-28
 
 ### ✨ Fitur Baru
