@@ -11,7 +11,8 @@ export {
   getBulanSekarang,
   getTahunSekarang,
   getTanggalHariIni,
-  formatDurasi
+  formatDurasi,
+  formatTanggalLengkap
 } from './formatters/dateFormatter'
 
 // Cache

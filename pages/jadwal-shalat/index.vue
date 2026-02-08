@@ -1,8 +1,45 @@
 <script setup lang="ts">
 import { useJadwalShalatStore } from '~/stores/jadwalShalatStore';
-import { watch, onMounted } from 'vue';
+import { watch, onMounted, computed } from 'vue';
+import { formatTanggalLengkap } from '~/utils';
+// FITUR ROUND-FILL OTOMATIS DINONAKTIFKAN SEMENTARA
+// import { useCurrentPrayerTime } from '~/composables/useCurrentPrayerTime';
 
 const store = useJadwalShalatStore();
+
+// FITUR ROUND-FILL OTOMATIS DINONAKTIFKAN SEMENTARA
+// Determine current active prayer time
+// const { currentPrayerTime } = useCurrentPrayerTime(computed(() => store.todaySchedule));
+
+/**
+ * Mengecek apakah tanggal pada jadwal adalah hari ini
+ * Format tanggal dari API: number (1, 2, 3, ...) atau string
+ */
+function isToday(tanggal: string | number): boolean {
+  const now = new Date();
+  const today = now.getDate();
+  
+  // Cek apakah bulan dan tahun yang dipilih sama dengan bulan dan tahun saat ini
+  const currentMonth = now.getMonth() + 1; // 0-indexed
+  const currentYear = now.getFullYear();
+  
+  if (store.selectedBulan !== currentMonth || store.selectedTahun !== currentYear) {
+    return false;
+  }
+  
+  // Handle jika tanggal adalah number
+  if (typeof tanggal === 'number') {
+    return tanggal === today;
+  }
+  
+  // Handle jika tanggal adalah string
+  const match = String(tanggal).match(/(\d{1,2})/);
+  if (match) {
+    const dayNumber = parseInt(match[1], 10);
+    return dayNumber === today;
+  }
+  return false;
+}
 
 // Watch for provinsi changes
 watch(
@@ -212,32 +249,128 @@ useHead({
 
     <!-- START: Result Table Section -->
     <div v-if="store.selectedKabKota" class="w-full max-w-5xl relative z-10 mx-auto animate-[fadeIn_0.5s_ease-out]">
-      
-      <!-- Header Info Card (Unified Glass Panel) -->
-      <div class="glass-noise rounded-[2rem] p-6 sm:p-8 mb-8 bg-[#1e293b]/40 border border-cyan-500/20 hover:border-cyan-500/50 backdrop-blur-2xl shadow-xl shadow-cyan-900/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden group transition-all duration-300">
-        
-        <!-- Ambient Glow -->
-        <div class="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 blur-[80px] rounded-full pointer-events-none -translate-y-1/2 translate-x-1/2"></div>
-        
-        <div class="relative z-10">
-          <div class="flex items-center gap-2.5 text-cyan-400/90 mb-3">
-            <span class="flex items-center justify-center w-6 h-6 rounded-full bg-cyan-500/10 border border-cyan-500/10 shadow-[0_0_10px_rgba(34,211,238,0.15)]">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
-              </svg>
-            </span>
-            <span class="text-xs font-bold tracking-[0.15em] uppercase opacity-90 text-cyan-200">Jadwal Shalat</span>
+
+      <!-- Location Actions: Geolocation & Favorite -->
+      <div class="w-full mb-6">
+        <LocationActions 
+             :provinces="store.provinsiList"
+             :cities="store.kabkotaList"
+             v-model:modelValueProvinsi="store.selectedProvinsi"
+             v-model:modelValueKota="store.selectedKabKota"
+        />
+      </div>
+
+      <!-- Daily Prayer Times Card (Merged with Header Info) -->
+      <div v-if="store.todaySchedule" class="w-full mb-8 animate-[fadeIn_0.5s_ease-out]">
+        <!-- Card Container with Glassmorphism -->
+        <div class="glass-noise rounded-[2rem] p-5 sm:p-6 bg-[#1e293b]/40 border border-cyan-500/20 hover:border-cyan-500/50 backdrop-blur-2xl shadow-xl shadow-cyan-900/5 relative overflow-hidden group transition-all duration-300">
+          
+          <!-- Ambient Glow -->
+          <div class="absolute top-0 left-0 w-96 h-96 bg-cyan-500/10 blur-[100px] rounded-full pointer-events-none -translate-x-1/2 -translate-y-1/2"></div>
+          
+          <!-- Header with Title, Location Info and Date -->
+          <div class="relative z-10 mb-4">
+            <!-- Title Row -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-cyan-400" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" />
+                  </svg>
+                </div>
+                <h3 class="text-xl sm:text-2xl font-bold text-white">Jadwal Shalat Hari Ini</h3>
+              </div>
+              <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-cyan-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                </svg>
+                <span class="text-sm font-medium text-gray-300">{{ formatTanggalLengkap() }}</span>
+              </div>
+            </div>
+            
+            <!-- Location Info -->
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+              <h2 class="text-2xl md:text-3xl font-bold text-white tracking-tight">{{ store.scheduleData?.kabkota || 'Pilih Lokasi' }}</h2>
+              <div class="flex items-center gap-3 text-sm font-medium text-gray-400">
+                <span class="hidden sm:block w-1 h-1 rounded-full bg-gray-600"></span>
+                <span class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/5 text-gray-300">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-cyan-400" viewBox="0 0 24 24" fill="currentColor">
+                    <path fill-rule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+                  </svg>
+                  {{ store.scheduleData?.provinsi || 'Provinsi' }}
+                </span>
+              </div>
+            </div>
           </div>
-          <h2 class="text-2xl md:text-3xl lg:text-4xl font-bold text-white tracking-tight mb-3 drop-shadow-sm">{{ store.scheduleData?.kabkota || 'Pilih Lokasi' }}</h2>
-          <div class="flex items-center gap-3 text-sm font-medium text-gray-400">
-            <span class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/5 text-gray-300">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-cyan-400" viewBox="0 0 24 24" fill="currentColor">
-                <path fill-rule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
-              </svg>
-              {{ store.scheduleData?.provinsi || 'Provinsi' }}
-            </span>
-            <span class="w-1 h-1 rounded-full bg-gray-600"></span>
-            <span>{{ store.scheduleData?.bulan_nama || 'Bulan' }} {{ store.scheduleData?.tahun || '2026' }}</span>
+
+          <!-- Prayer Times Grid -->
+          <div class="relative z-10 grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
+            
+            <!-- Subuh -->
+            <div class="group relative rounded-2xl p-3 sm:p-4 bg-gradient-to-br from-blue-600/20 to-blue-700/10 border border-blue-500/30 hover:border-blue-400/50 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20">
+              <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
+              <!-- FITUR ROUND-FILL OTOMATIS DINONAKTIFKAN SEMENTARA -->
+              <!-- <div v-if="currentPrayerTime === 'subuh'" class="absolute top-2 right-2">
+                <div class="w-2 h-2 rounded-full bg-blue-400 animate-pulse shadow-lg shadow-blue-500/50"></div>
+              </div> -->
+              <div class="relative z-10 text-center">
+                <div class="text-xs sm:text-sm font-semibold text-blue-300 mb-1 uppercase tracking-wider">Subuh</div>
+                <div class="text-2xl sm:text-3xl font-bold text-white">{{ store.todaySchedule.subuh }}</div>
+              </div>
+            </div>
+
+            <!-- Dzuhur -->
+            <div class="group relative rounded-2xl p-3 sm:p-4 bg-gradient-to-br from-cyan-600/20 to-cyan-700/10 border border-cyan-500/30 hover:border-cyan-400/50 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/20">
+              <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
+              <!-- FITUR ROUND-FILL OTOMATIS DINONAKTIFKAN SEMENTARA -->
+              <!-- <div v-if="currentPrayerTime === 'dzuhur'" class="absolute top-2 right-2">
+                <div class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-lg shadow-cyan-500/50"></div>
+              </div> -->
+              <div class="relative z-10 text-center">
+                <div class="text-xs sm:text-sm font-semibold text-cyan-300 mb-1 uppercase tracking-wider">Dzuhur</div>
+                <div class="text-2xl sm:text-3xl font-bold text-white">{{ store.todaySchedule.dzuhur }}</div>
+              </div>
+            </div>
+
+            <!-- Ashar -->
+            <div class="group relative rounded-2xl p-3 sm:p-4 bg-gradient-to-br from-teal-600/20 to-teal-700/10 border border-teal-500/30 hover:border-teal-400/50 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-teal-500/20">
+              <div class="absolute inset-0 bg-gradient-to-br from-teal-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
+              <!-- FITUR ROUND-FILL OTOMATIS DINONAKTIFKAN SEMENTARA -->
+              <!-- <div v-if="currentPrayerTime === 'ashar'" class="absolute top-2 right-2">
+                <div class="w-2 h-2 rounded-full bg-teal-400 animate-pulse shadow-lg shadow-teal-500/50"></div>
+              </div> -->
+              <div class="relative z-10 text-center">
+                <div class="text-xs sm:text-sm font-semibold text-teal-300 mb-1 uppercase tracking-wider">Ashar</div>
+                <div class="text-2xl sm:text-3xl font-bold text-white">{{ store.todaySchedule.ashar }}</div>
+              </div>
+            </div>
+
+            <!-- Maghrib (Highlighted) -->
+            <div class="group relative rounded-2xl p-3 sm:p-4 bg-gradient-to-br from-orange-600/30 to-amber-700/20 border border-orange-500/50 hover:border-orange-400/70 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-orange-500/30">
+              <div class="absolute inset-0 bg-gradient-to-br from-orange-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
+              <!-- FITUR ROUND-FILL OTOMATIS DINONAKTIFKAN SEMENTARA -->
+              <!-- <div v-if="currentPrayerTime === 'maghrib'" class="absolute top-2 right-2">
+                <div class="w-2 h-2 rounded-full bg-orange-400 animate-pulse shadow-lg shadow-orange-500/50"></div>
+              </div> -->
+              <div class="relative z-10 text-center">
+                <div class="text-xs sm:text-sm font-semibold text-orange-300 mb-1 uppercase tracking-wider">Maghrib</div>
+                <div class="text-2xl sm:text-3xl font-bold text-white">{{ store.todaySchedule.maghrib }}</div>
+              </div>
+            </div>
+
+            <!-- Isya -->
+            <div class="group relative rounded-2xl p-3 sm:p-4 bg-gradient-to-br from-indigo-600/20 to-indigo-700/10 border border-indigo-500/30 hover:border-indigo-400/50 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-indigo-500/20">
+              <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
+              <!-- FITUR ROUND-FILL OTOMATIS DINONAKTIFKAN SEMENTARA -->
+              <!-- <div v-if="currentPrayerTime === 'isya'" class="absolute top-2 right-2">
+                <div class="w-2 h-2 rounded-full bg-indigo-400 animate-pulse shadow-lg shadow-indigo-500/50"></div>
+              </div> -->
+              <div class="relative z-10 text-center">
+                <div class="text-xs sm:text-sm font-semibold text-indigo-300 mb-1 uppercase tracking-wider">Isya</div>
+                <div class="text-2xl sm:text-3xl font-bold text-white">{{ store.todaySchedule.isya }}</div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -266,34 +399,70 @@ useHead({
             
             <!-- Body with Row Hover Glow -->
             <tbody class="text-gray-300 text-sm divide-y divide-white/[0.03]">
-              <tr v-for="(day, index) in store.jadwalShalat" :key="index" class="group hover:bg-cyan-500/[0.02] transition-all duration-300">
-                <!-- Tanggal Column -->
-                <td class="p-5 text-left pl-8 font-semibold text-white group-hover:text-cyan-100 transition-colors">
-                  <span class="bg-white/5 border border-white/5 rounded-lg px-3 py-1.5">{{ day.tanggal }}</span>
+              <tr 
+                v-for="(day, index) in store.jadwalShalat" 
+                :key="index" 
+                :class="[
+                  'group transition-all duration-300',
+                  isToday(day.tanggal) 
+                    ? 'bg-gradient-to-r from-teal-500/10 via-emerald-500/5 to-transparent border-l-2 border-l-teal-400' 
+                    : 'hover:bg-cyan-500/[0.02]'
+                ]"
+              >
+                <!-- Tanggal Column with "Hari ini" Badge -->
+                <td class="p-5 text-left pl-6 font-semibold text-white group-hover:text-cyan-100 transition-colors">
+                  <div class="flex items-center gap-2">
+                    <!-- Tanggal -->
+                    <span :class="[
+                      'rounded-lg px-3 py-1.5',
+                      isToday(day.tanggal) 
+                        ? 'bg-teal-500/20 border border-teal-500/30 text-teal-100 font-bold' 
+                        : 'bg-white/5 border border-white/5'
+                    ]">
+                      {{ day.tanggal }}
+                    </span>
+                    <!-- Badge Hari Ini -->
+                    <span 
+                      v-if="isToday(day.tanggal)" 
+                      class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-teal-500 text-white shadow-lg shadow-teal-500/30 animate-pulse"
+                    >
+                      Hari ini
+                    </span>
+                  </div>
                 </td>
                 
-                <!-- Highlighted Time Columns -->
+                <!-- Imsak Column (Highlighted) -->
                 <td class="p-5">
-                  <span class="block px-3 py-1.5 rounded-lg font-bold text-cyan-300 bg-cyan-500/10 border border-cyan-500/10 group-hover:bg-cyan-500/20 group-hover:shadow-[0_0_15px_rgba(34,211,238,0.15)] transition-all">
+                  <span :class="[
+                    'block px-3 py-1.5 rounded-lg font-bold transition-all',
+                    isToday(day.tanggal)
+                      ? 'text-teal-200 bg-teal-500/20 border border-teal-500/30 shadow-[0_0_15px_rgba(20,184,166,0.2)]'
+                      : 'text-cyan-300 bg-cyan-500/10 border border-cyan-500/10 group-hover:bg-cyan-500/20 group-hover:shadow-[0_0_15px_rgba(34,211,238,0.15)]'
+                  ]">
                     {{ day.imsak }}
                   </span>
                 </td>
                 
                 <!-- Standard Time Columns -->
-                <td class="p-5 font-medium">{{ day.subuh }}</td>
-                <td class="p-5 text-gray-500">{{ day.terbit }}</td>
-                <td class="p-5 text-gray-500">{{ day.dhuha }}</td>
-                <td class="p-5 font-medium">{{ day.dzuhur }}</td>
-                <td class="p-5 font-medium">{{ day.ashar }}</td>
+                <td :class="['p-5 font-medium', isToday(day.tanggal) ? 'text-teal-100' : '']">{{ day.subuh }}</td>
+                <td :class="['p-5', isToday(day.tanggal) ? 'text-teal-200/70' : 'text-gray-500']">{{ day.terbit }}</td>
+                <td :class="['p-5', isToday(day.tanggal) ? 'text-teal-200/70' : 'text-gray-500']">{{ day.dhuha }}</td>
+                <td :class="['p-5 font-medium', isToday(day.tanggal) ? 'text-teal-100' : '']">{{ day.dzuhur }}</td>
+                <td :class="['p-5 font-medium', isToday(day.tanggal) ? 'text-teal-100' : '']">{{ day.ashar }}</td>
                 
                 <!-- Maghrib Column (Highlight) -->
                 <td class="p-5">
-                  <span class="block px-3 py-1.5 rounded-lg font-bold text-cyan-300 bg-cyan-500/10 border border-cyan-500/10 group-hover:bg-cyan-500/20 group-hover:shadow-[0_0_15px_rgba(34,211,238,0.15)] transition-all">
+                  <span :class="[
+                    'block px-3 py-1.5 rounded-lg font-bold transition-all',
+                    isToday(day.tanggal)
+                      ? 'text-teal-200 bg-teal-500/20 border border-teal-500/30 shadow-[0_0_15px_rgba(20,184,166,0.2)]'
+                      : 'text-cyan-300 bg-cyan-500/10 border border-cyan-500/10 group-hover:bg-cyan-500/20 group-hover:shadow-[0_0_15px_rgba(34,211,238,0.15)]'
+                  ]">
                     {{ day.maghrib }}
                   </span>
                 </td>
                 
-                <td class="p-5 font-medium">{{ day.isya }}</td>
+                <td :class="['p-5 font-medium', isToday(day.tanggal) ? 'text-teal-100' : '']">{{ day.isya }}</td>
               </tr>
             </tbody>
           </table>

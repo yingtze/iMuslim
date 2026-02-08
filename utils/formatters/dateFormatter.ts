@@ -94,17 +94,56 @@ export function getTanggalHariIni(): number {
 export function formatDurasi(jamMulai: string, jamSelesai: string): string {
   const [jamM, menitM] = jamMulai.split(':').map(Number)
   const [jamS, menitS] = jamSelesai.split(':').map(Number)
-  
-  const totalMenitMulai = jamM * 60 + menitM
-  const totalMenitSelesai = jamS * 60 + menitS
+
+  const totalMenitMulai = (jamM || 0) * 60 + (menitM || 0)
+  const totalMenitSelesai = (jamS || 0) * 60 + (menitS || 0)
   const durasi = totalMenitSelesai - totalMenitMulai
-  
+
   const jam = Math.floor(durasi / 60)
   const menit = durasi % 60
-  
+
   const parts = []
   if (jam > 0) parts.push(`${jam} jam`)
   if (menit > 0) parts.push(`${menit} menit`)
-  
+
   return parts.join(' ')
+}
+
+/**
+ * Get nama bulan dalam bahasa Indonesia
+ * @param bulan - Nomor bulan (1-12)
+ * @returns Nama bulan dalam bahasa Indonesia
+ */
+function getNamaBulan(bulan: number): string {
+  const bulanIndo = [
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+  ]
+  return bulanIndo[bulan - 1] || 'Januari'
+}
+
+/**
+ * Get nama hari dari Date object
+ * @param date - Date object
+ * @returns Nama hari dalam bahasa Indonesia
+ */
+function getNamaHariFromDate(date: Date): string {
+  const hariIndo = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+  return hariIndo[date.getDay()]
+}
+
+/**
+ * Format tanggal lengkap dalam bahasa Indonesia
+ * @returns Tanggal lengkap (e.g., "Minggu, 8 Februari 2026")
+ * @example
+ * formatTanggalLengkap() // 'Minggu, 8 Februari 2026'
+ */
+export function formatTanggalLengkap(): string {
+  const now = new Date()
+  const namaHari = getNamaHariFromDate(now)
+  const tanggal = now.getDate()
+  const namaBulan = getNamaBulan(now.getMonth() + 1)
+  const tahun = now.getFullYear()
+
+  return `${namaHari}, ${tanggal} ${namaBulan} ${tahun}`
 }
