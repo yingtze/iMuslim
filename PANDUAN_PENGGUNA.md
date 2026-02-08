@@ -51,7 +51,7 @@ Anda dapat mengakses fitur ini melalui menu **Imsakiyah** di navigasi utama.
 2. **Halaman Khusus (View Detail)**:
    - Klik tombol **Lihat Halaman Khusus** pada panel hasil pencarian.
    - Anda akan diarahkan ke halaman detail lokasi tersebut.
-   - Di sini, Anda bisa melihat **Waktu Penting Hari Ini** (Imsak, Subuh, Maghrib, Isya) yang disorot secara khusus.
+   - Di sini, Anda bisa melihat **Waktu Penting Hari Ini (1 Ramadhan)** yang menampilkan waktu-waktu penting di hari pertama Ramadhan (Imsak, Subuh, Maghrib, Isya) yang disorot secara khusus.
    - Di bawahnya terdapat tabel lengkap jadwal 30 hari bulan Ramadhan.
 
 ## 🔗 Navigasi

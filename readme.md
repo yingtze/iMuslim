@@ -13,7 +13,7 @@ iMuslim adalah aplikasi web modern untuk kumpulan doa harian, dibangun dengan ta
 - **Rekomendasi Cerdas**: Fitur "Doa Lainnya" yang menampilkan doa terkait dalam satu kategori.
 - **Jadwal Imsakiyah 1447 H**: Cek jadwal imsakiyah dan waktu sholat lengkap untuk seluruh wilayah Indonesia.
 - **Pencarian Lokasi**: Pilih lokasi berdasarkan Provinsi dan Kabupaten/Kota secara dinamis.
-- **Halaman Khusus Imsakiyah**: Tampilan khusus untuk waktu penting (Imsak, Subuh, Maghrib, Isya) dan tabel 30 hari.
+- **Halaman Khusus Imsakiyah**: Tampilan khusus untuk waktu penting 1 Ramadhan (Imsak, Subuh, Maghrib, Isya) dan tabel 30 hari.
 - **Setiap fitur di atas tetap mengusung desain Premium Glassmorphism.**
 
 ## 🛠 Teknologi

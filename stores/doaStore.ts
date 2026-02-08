@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
 import type { DoaItem, DoaDetail, DoaFilter } from '~/types/doa'
 
 export const useDoaStore = defineStore('doa', () => {
@@ -49,6 +50,13 @@ export const useDoaStore = defineStore('doa', () => {
         if (newFilters.tag !== undefined) filters.value.tag = newFilters.tag
     }
 
+    /**
+     * Set the selected doa for detail view
+     */
+    function setSelectedDoa(doa: DoaDetail | null) {
+        selectedDoa.value = doa
+    }
+
     return {
         doaList,
         selectedDoa,
@@ -56,6 +64,7 @@ export const useDoaStore = defineStore('doa', () => {
         categories,
         tags,
         setDoaList,
-        setFilters
+        setFilters,
+        setSelectedDoa
     }
 })

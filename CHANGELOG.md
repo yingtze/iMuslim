@@ -2,6 +2,18 @@
 
 Semua perubahan penting pada proyek iMuslim akan didokumentasikan di file ini.
 
+## [1.1.1] - 2026-02-08
+
+### 🐛 Perbaikan Bug
+- **Fix Waktu Penting 1 Ramadhan**: Memperbaiki logika pengambilan data pada bagian "Waktu Penting Hari Ini (1 Ramadhan)" di halaman detail Imsakiyah.
+  - Sebelumnya: Mengambil data berdasarkan tanggal hari ini (bisa tidak sesuai dengan 1 Ramadhan).
+  - Sekarang: Selalu mengambil data dari tanggal 1 Ramadhan (hari pertama) untuk konsistensi.
+- **Penambahan `firstDaySchedule`**: Menambahkan computed property baru di `imsakiyahStore` yang secara eksplisit mengambil jadwal tanggal 1 Ramadhan.
+
+### 🔧 Perubahan Teknis
+- Memisahkan logika `todaySchedule` dan `firstDaySchedule` untuk fleksibilitas penggunaan data di masa depan.
+- Memperbaiki type handling di store untuk menghindari TypeScript errors.
+
 ## [1.1.0] - 2026-01-29
 
 ### ✨ Fitur Baru

@@ -2,13 +2,19 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
+  nitro: {
+    prerender: {
+      crawlLinks: false
+    }
+  },
   modules: [
     '@nuxtjs/tailwindcss',
     '@pinia/nuxt'
   ],
-  css: ['~/assets/css/main.css'],
+  vue: {
+    macros: {}
+  },
   tailwindcss: {
-    cssPath: '~/assets/css/main.css',
     configPath: 'tailwind.config.ts'
   },
   app: {

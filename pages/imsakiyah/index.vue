@@ -1,91 +1,25 @@
 <script setup lang="ts">
-import type { ImsakiyahData } from '~/types/imsakiyah'
+import { useImsakiyahStore } from '~/stores/imsakiyahStore'
 
-const { getProvinces, getCities, getImsakiyah } = useImsakiyah()
+const store = useImsakiyahStore()
 
-const selectedProvinsi = ref('')
-const selectedKota = ref('')
-
-const listProvinsi = ref<string[]>([])
-const listKota = ref<string[]>([])
-const jadwalData = ref<ImsakiyahData | null>(null)
-const jadwalImsakiyah = computed(() => jadwalData.value?.imsakiyah || [])
-
-const loadingProvinsi = ref(false)
-const loadingKota = ref(false)
-const loadingJadwal = ref(false)
-
-// 1. Fetch Daftar Provinsi
-const fetchProvinces = async () => {
-    loadingProvinsi.value = true
-    try {
-        const response = await getProvinces()
-        if (response && response.code === 200) {
-            listProvinsi.value = response.data
-        }
-    } catch (err) {
-        console.error('Error fetching provinces:', err)
-    } finally {
-        loadingProvinsi.value = false
-    }
-}
-
-// 2. Fetch Daftar Kota berdasarkan Provinsi
-// 2. Fetch Daftar Kota berdasarkan Provinsi
-const fetchCities = async (namaProvinsi: string) => {
-    if (!namaProvinsi) return
-    loadingKota.value = true
-    listKota.value = [] // Reset kota
-    selectedKota.value = '' // Reset pilihan kota
-    jadwalData.value = null // Reset jadwal
-
-    try {
-        const response = await getCities(namaProvinsi)
-        
-        if (response && response.code === 200) {
-           listKota.value = response.data
-        }
-    } catch (err) {
-        console.error('Error fetching cities:', err)
-    } finally {
-        loadingKota.value = false
-    }
-}
-
-// 3. Fetch Jadwal Imsakiyah
-// 3. Fetch Jadwal Imsakiyah
-const fetchJadwal = async () => {
-     if (!selectedProvinsi.value || !selectedKota.value) return
-     loadingJadwal.value = true
-     try {
-        const response = await getImsakiyah(selectedProvinsi.value, selectedKota.value)
-        if (response && response.code === 200) {
-            jadwalData.value = response.data
-        }
-     } catch (err) {
-         console.error('Error fetching schedule:', err)
-     } finally {
-         loadingJadwal.value = false
-     }
-}
-
-// Watcher: Jika provinsi berubah, ambil data kota
-watch(selectedProvinsi, (newVal) => {
+// Watch for provinsi changes
+watch(() => store.selectedProvinsi, (newVal) => {
     if (newVal) {
-        fetchCities(newVal)
+        store.fetchCities(newVal)
     }
 })
 
-// Watcher: Jika kota berubah, ambil jadwal
-watch(selectedKota, (newVal) => {
-    if (newVal) {
-        fetchJadwal()
+// Watch for kota changes
+watch(() => store.selectedKota, (newVal) => {
+    if (newVal && store.selectedProvinsi) {
+        store.fetchSchedule(store.selectedProvinsi, newVal)
     }
 })
 
 // Initial Fetch
 onMounted(() => {
-    fetchProvinces()
+    store.fetchProvinces()
 })
 
 useHead({
@@ -144,15 +78,15 @@ useHead({
 
             <!-- Input Selection -->
             <div class="relative z-10">
-                 <select v-model="selectedProvinsi" class="w-full h-14 bg-black/20 border border-white/10 text-gray-200 text-sm font-medium rounded-2xl px-5 outline-none appearance-none 
+                 <select v-model="store.selectedProvinsi" class="w-full h-14 bg-black/20 border border-white/10 text-gray-200 text-sm font-medium rounded-2xl px-5 outline-none appearance-none 
                                   focus:bg-black/30 focus:border-teal-500/30 focus:ring-1 focus:ring-teal-500/30
-                                  hover:bg-black/30 hover:border-white/20 transition-all cursor-pointer shadow-inner disabled:opacity-50" :disabled="loadingProvinsi">
+                                  hover:bg-black/30 hover:border-white/20 transition-all cursor-pointer shadow-inner disabled:opacity-50" :disabled="store.loadingProvinces">
                         <option value="" disabled selected>-- Pilih Provinsi --</option>
-                        <option v-for="prov in listProvinsi" :key="prov" :value="prov">{{ prov }}</option>
+                        <option v-for="prov in store.provinces" :key="prov" :value="prov">{{ prov }}</option>
                 </select>
                 <!-- Chevron -->
                 <div class="absolute inset-y-0 right-0 flex items-center pr-5 pointer-events-none">
-                     <svg v-if="loadingProvinsi" class="animate-spin h-5 w-5 text-teal-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                     <svg v-if="store.loadingProvinces" class="animate-spin h-5 w-5 text-teal-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                      <svg v-else class="w-5 h-5 text-gray-500 group-hover:text-teal-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                     </svg>
@@ -181,15 +115,15 @@ useHead({
 
             <!-- Input Selection -->
             <div class="relative z-10">
-                 <select v-model="selectedKota" class="w-full h-14 bg-black/20 border border-white/10 text-gray-200 text-sm font-medium rounded-2xl px-5 outline-none appearance-none 
+                 <select v-model="store.selectedKota" class="w-full h-14 bg-black/20 border border-white/10 text-gray-200 text-sm font-medium rounded-2xl px-5 outline-none appearance-none 
                                   focus:bg-black/30 focus:border-teal-500/30 focus:ring-1 focus:ring-teal-500/30
-                                  hover:bg-black/30 hover:border-white/20 transition-all cursor-pointer shadow-inner disabled:opacity-50 disabled:cursor-not-allowed" :disabled="!selectedProvinsi || loadingKota">
+                                  hover:bg-black/30 hover:border-white/20 transition-all cursor-pointer shadow-inner disabled:opacity-50 disabled:cursor-not-allowed" :disabled="!store.selectedProvinsi || store.loadingCities">
                         <option value="" disabled selected>-- Pilih Kabupaten/Kota --</option>
-                        <option v-for="kota in listKota" :key="kota" :value="kota">{{ kota }}</option>
+                        <option v-for="kota in store.cities" :key="kota" :value="kota">{{ kota }}</option>
                 </select>
                 <!-- Chevron -->
                 <div class="absolute inset-y-0 right-0 flex items-center pr-5 pointer-events-none">
-                     <svg v-if="loadingKota" class="animate-spin h-5 w-5 text-teal-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                     <svg v-if="store.loadingCities" class="animate-spin h-5 w-5 text-teal-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                      <svg v-else class="w-5 h-5 text-gray-500 group-hover:text-teal-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                     </svg>
@@ -200,7 +134,7 @@ useHead({
     </div>
 
     <!-- START: Result Table Section -->
-    <div v-if="selectedKota" class="w-full max-w-5xl relative z-10 mx-auto animate-[fadeIn_0.5s_ease-out]">
+    <div v-if="store.selectedKota" class="w-full max-w-5xl relative z-10 mx-auto animate-[fadeIn_0.5s_ease-out]">
         
         <!-- Header Info Card (Unified Glass Panel) -->
         <div class="glass-noise rounded-[2rem] p-6 sm:p-8 mb-8 bg-[#1e293b]/40 border border-teal-500/20 hover:border-teal-500/50 backdrop-blur-2xl shadow-xl shadow-teal-900/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden group transition-all duration-300">
@@ -217,21 +151,21 @@ useHead({
                   </span>
                   <span class="text-xs font-bold tracking-[0.15em] uppercase opacity-90 text-teal-200">Jadwal Imsakiyah</span>
                </div>
-               <h2 class="text-2xl md:text-3xl lg:text-4xl font-bold text-white tracking-tight mb-3 drop-shadow-sm">{{ jadwalData?.kabkota || 'Kab. Tanjung Jabung Barat' }}</h2>
+               <h2 class="text-2xl md:text-3xl lg:text-4xl font-bold text-white tracking-tight mb-3 drop-shadow-sm">{{ store.scheduleData?.kabkota || 'Pilih Lokasi' }}</h2>
                <div class="flex items-center gap-3 text-sm font-medium text-gray-400">
                    <span class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/5 text-gray-300">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-teal-400" viewBox="0 0 24 24" fill="currentColor">
                             <path fill-rule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
                         </svg>
-                        {{ jadwalData?.provinsi || 'Jambi' }}
+                        {{ store.scheduleData?.provinsi || 'Provinsi' }}
                    </span>
                    <span class="w-1 h-1 rounded-full bg-gray-600"></span>
-                   <span>Ramadhan {{ jadwalData?.hijriah || '1447' }}H / {{ jadwalData?.masehi || '2026' }}M</span>
+                   <span>Ramadhan {{ store.scheduleData?.hijriah || '1447' }}H / {{ store.scheduleData?.masehi || '2026' }}M</span>
                </div>
             </div>
 
             <NuxtLink 
-                :to="`/imsakiyah/${encodeURIComponent(selectedProvinsi)}/${encodeURIComponent(selectedKota)}`"
+                :to="`/imsakiyah/${encodeURIComponent(store.selectedProvinsi)}/${encodeURIComponent(store.selectedKota)}`"
                 class="relative z-10 px-6 py-3.5 rounded-2xl bg-teal-500/10 hover:bg-teal-500/20 text-teal-200 text-sm font-semibold border border-teal-500/20 transition-all shadow-lg hover:shadow-teal-500/10 group flex items-center gap-3 shrink-0"
             >
                 <span class="group-hover:text-teal-100 transition-colors">Lihat Halaman Khusus</span>
@@ -267,7 +201,7 @@ useHead({
                     
                     <!-- Body with Row Hover Glow -->
                     <tbody class="text-gray-300 text-sm divide-y divide-white/[0.03]">
-                        <tr v-for="(day, index) in jadwalImsakiyah" :key="index" class="group hover:bg-teal-500/[0.02] transition-all duration-300">
+                        <tr v-for="(day, index) in store.jadwalImsakiyah" :key="index" class="group hover:bg-teal-500/[0.02] transition-all duration-300">
                             <!-- Tanggal Column -->
                             <td class="p-5 text-left pl-8 font-semibold text-white group-hover:text-teal-100 transition-colors">
                                 <span class="bg-white/5 border border-white/5 rounded-lg px-3 py-1.5">{{ day.tanggal }}</span>

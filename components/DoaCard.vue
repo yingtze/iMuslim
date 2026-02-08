@@ -5,22 +5,48 @@ const props = defineProps<{
   doa: DoaItem
 }>()
 
+const shareLoading = ref(false)
+const shareMessage = ref<string | null>(null)
+
+/**
+ * Share doa menggunakan Web Share API dengan fallback clipboard
+ */
 const shareDoa = async () => {
-  if (navigator.share) {
-    try {
+  // Validate doa data
+  if (!props.doa?.nama || !props.doa?.idn) {
+    shareMessage.value = 'Data doa tidak lengkap'
+    setTimeout(() => shareMessage.value = null, 3000)
+    return
+  }
+
+  shareLoading.value = true
+  
+  try {
+    if (navigator.share) {
       await navigator.share({
         title: props.doa.nama,
         text: props.doa.idn,
         url: window.location.origin + `/doa/${props.doa.id}`
       })
-    } catch (err) {
-      console.error('Error sharing:', err)
+      shareMessage.value = 'Berhasil dibagikan!'
+    } else {
+      // Fallback: Copy link to clipboard
+      const url = window.location.origin + `/doa/${props.doa.id}`
+      await navigator.clipboard.writeText(url)
+      shareMessage.value = 'Link berhasil disalin ke clipboard!'
     }
-  } else {
-    // Fallback: Copy link to clipboard
-    const url = window.location.origin + `/doa/${props.doa.id}`
-    navigator.clipboard.writeText(url)
-    alert('Link doa berhasil disalin!')
+    
+    // Clear message after 3 seconds
+    setTimeout(() => shareMessage.value = null, 3000)
+  } catch (err: any) {
+    // User likely cancelled the share dialog
+    if (err.name !== 'AbortError') {
+      console.error('Share error:', err)
+      shareMessage.value = 'Gagal membagikan doa'
+      setTimeout(() => shareMessage.value = null, 3000)
+    }
+  } finally {
+    shareLoading.value = false
   }
 }
 </script>
@@ -66,6 +92,11 @@ const shareDoa = async () => {
         </p>
       </div>
 
+      <!-- Share Message Feedback -->
+      <div v-if="shareMessage" class="mb-3 px-3 py-2 rounded-lg bg-green-500/20 border border-green-500/30 relative z-10">
+        <p class="text-xs text-green-300 text-center">{{ shareMessage }}</p>
+      </div>
+
       <!-- Footer -->
       <div class="flex flex-col gap-4 relative z-10 mt-auto">
         <!-- Glass Tags -->
@@ -104,14 +135,20 @@ const shareDoa = async () => {
           </NuxtLink>
           
           <button 
+            :disabled="shareLoading"
             @click="shareDoa"
+            :aria-label="`Bagikan doa ${doa.nama}`"
             class="p-2.5 rounded-xl text-gray-400 hover:text-white transition-all
                    bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20
-                   hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] active:scale-95 group/share"
+                   hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] active:scale-95 group/share
+                   disabled:opacity-50 disabled:cursor-not-allowed"
             title="Bagikan Doa"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover/share:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg v-if="!shareLoading" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover/share:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            </svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
           </button>
         </div>

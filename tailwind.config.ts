@@ -13,6 +13,9 @@ export default <Config>{
         'error.{js,ts,vue}',
         'content/**/*.md'
     ],
+    corePlugins: {
+        preflight: true
+    },
     theme: {
         extend: {
             colors: {

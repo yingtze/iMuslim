@@ -1,7 +1,6 @@
 <script setup lang="ts">
 // Redirect to /doa
-const router = useRouter()
-router.replace('/doa')
+await navigateTo('/doa')
 </script>
 
 <template>

@@ -11,7 +11,11 @@ const localFilters = ref({
 })
 
 const isSearchFocused = ref(false)
+const searchDebounceTimer = ref<NodeJS.Timeout | null>(null)
 
+/**
+ * Update filters dan navigate dengan debounce untuk mengurangi router pushes
+ */
 const updateFilters = () => {
   store.setFilters(localFilters.value)
   router.push({
@@ -21,6 +25,28 @@ const updateFilters = () => {
     }
   })
 }
+
+/**
+ * Debounced search handler untuk menghindari terlalu banyak router navigations
+ */
+const handleSearch = () => {
+  if (searchDebounceTimer.value) {
+    clearTimeout(searchDebounceTimer.value)
+  }
+  
+  searchDebounceTimer.value = setTimeout(() => {
+    updateFilters()
+  }, 300)
+}
+
+/**
+ * Cleanup debounce timer
+ */
+onUnmounted(() => {
+  if (searchDebounceTimer.value) {
+    clearTimeout(searchDebounceTimer.value)
+  }
+})
 </script>
 
 <template>
@@ -43,12 +69,14 @@ const updateFilters = () => {
             v-model="localFilters.grup"
             type="text"
             placeholder="Cari doa berdasarkan nama, isi, atau kategori..."
+            aria-label="Cari doa"
             class="w-full h-12 md:h-14 pl-12 pr-6 rounded-[1.5rem] text-sm md:text-base text-white placeholder-gray-500 outline-none transition-all duration-300
                    bg-black/20 border border-transparent truncate
                    focus:bg-black/40 focus:border-primary-500/30 focus:shadow-[0_0_20px_rgba(16,185,129,0.1)]
                    hover:bg-black/30"
             @focus="isSearchFocused = true"
             @blur="isSearchFocused = false"
+            @input="handleSearch"
             @keyup.enter="updateFilters"
           />
         </div>
@@ -57,6 +85,7 @@ const updateFilters = () => {
         <div class="relative group flex-1 w-full transition-all duration-500">
           <select 
             v-model="localFilters.grup"
+            aria-label="Filter berdasarkan kategori"
             class="w-full h-12 md:h-14 appearance-none pl-5 pr-10 rounded-[1.5rem] text-sm font-medium text-gray-200 outline-none cursor-pointer transition-all duration-300
                    bg-black/20 border border-transparent
                    focus:bg-black/40 focus:border-primary-500/30
@@ -78,6 +107,7 @@ const updateFilters = () => {
         <div class="relative group flex-1 w-full transition-all duration-500">
           <select 
             v-model="localFilters.tag"
+            aria-label="Filter berdasarkan tag"
             class="w-full h-12 md:h-14 appearance-none pl-5 pr-10 rounded-[1.5rem] text-sm font-medium text-gray-200 outline-none cursor-pointer transition-all duration-300
                    bg-black/20 border border-transparent
                    focus:bg-black/40 focus:border-primary-500/30
